@@ -10,9 +10,7 @@
    forEach([1, 2, 3], (el) => console.log(el))
  */
 function forEach(array, fn) {
-  for (const el of array) {
-    fn(el);
-  }
+  for (let i = 0; i < array.length; i++) fn(array[i], i, array);
 }
 
 /*
@@ -27,9 +25,7 @@ function forEach(array, fn) {
 function map(array, fn) {
   const newArr = [];
 
-  for (const el of array) {
-    newArr.push(fn(el));
-  }
+  for (let i = 0; i < array.length; i++) newArr.push(fn(array[i], i, array));
 
   return newArr;
 }
@@ -44,17 +40,11 @@ function map(array, fn) {
    reduce([1, 2, 3], (all, current) => all + current) // 6
  */
 function reduce(array, fn, initial) {
-  let accum;
+  let i = 0;
+  let accum = initial || array[0];
+  if (!initial) i++;
 
-  if (typeof elem === 'undefined') {
-    accum = array.shift();
-  } else {
-    accum = initial;
-  }
-
-  for (const el of array) {
-    accum = fn(accum, el);
-  }
+  for (; i < array.length; i++) accum = fn(accum, array[i], i, array);
 
   return accum;
 }
@@ -78,13 +68,13 @@ function upperProps(obj) {
  Proxy должен перехватывать все попытки записи значений свойств и возводить это значение в квадрат
 
  Пример:
-   const obj = createProxy({});
+   const obj = createProxy({});!
    obj.foo = 2;
    console.log(obj.foo); // 4
  */
 function createProxy(obj) {
   return new Proxy(obj, {
-    set: (obj, prop) => (obj = prop * prop),
+    set: (obj, name, val) => (obj[name] = val * val),
   });
 }
 
