@@ -111,7 +111,16 @@ function deleteTextNodes(where) {
    После выполнения функции, дерево <span> <div> <b>привет</b> </div> <p>loftchool</p> !!!</span>
    должно быть преобразовано в <span><div><b></b></div><p></p></span>
  */
-function deleteTextNodesRecursive(where) {}
+function deleteTextNodesRecursive(where) {
+  for (let i = 0; i < where.childNodes.length; i++) {
+    if (where.childNodes[i].nodeType === 3) {
+      where.childNodes[i].remove();
+      i--;
+    } else if (where.childNodes[i].nodeType === 1) {
+      deleteTextNodesRecursive(where.childNodes[i]);
+    }
+  }
+}
 
 /*
  Задание 7 *:
@@ -133,7 +142,65 @@ function deleteTextNodesRecursive(where) {}
      texts: 3
    }
  */
-function collectDOMStat(root) {}
+
+// ==========================================================================================
+// Прошлый вариант
+// function collectDOMStat(root) {
+//   let stats = {
+//     tags: {},
+//     classes: {},
+//     texts: 0
+//   };
+
+//   for(let el of root.childNodes){
+//     if(el.nodeType === 3){
+//       stats.texts += 1;
+//     }
+//     else if(el.nodeType === 1){
+//       if(stats.tags[el.tagName])
+//         stats.tags[el.tagName] += 1;
+//       else
+//         stats.tags[el.tagName] = 1;
+
+//       for(let cls of el.classList){
+//         if(stats.classes[cls])
+//           stats.classes[cls] += 1;
+//         else
+//           stats.classes[cls] = 1;
+//       }
+//     }
+//   }
+
+//   return stats;
+// }
+// ==========================================================================================
+
+function collectDOMStat(root) {
+  const stats = {
+    tags: {},
+    classes: {},
+    texts: 0,
+  };
+
+  function scan(node) {
+    for (const el of node.childNodes) {
+      if (el.nodeType === Node.TEXT_NODE) stats.texts++;
+      else if (el.nodeType === 1) {
+        if (el.tagName in stats.tags) stats.tags[el.tagName]++;
+        else stats.tags[el.tagName] = 1;
+
+        for (const cls of el.classList) {
+          if (cls in stats.classes) stats.classes[cls]++;
+          else stats.classes[cls] = 1;
+        }
+      }
+    }
+  }
+
+  scan(root);
+
+  return stats;
+}
 
 /*
  Задание 8 *:
@@ -167,7 +234,29 @@ function collectDOMStat(root) {}
      nodes: [div]
    }
  */
-function observeChildNodes(where, fn) {}
+function observeChildNodes(where, fn) {
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((el) => {
+      if (el.type === 'childList') {
+        if (el.addedNodes.length)
+          fn({
+            type: 'insert',
+            nodes: [...el.addedNodes],
+          });
+        else
+          fn({
+            type: 'remove',
+            nodes: [...el.removedNodes],
+          });
+      }
+    });
+  });
+
+  observer.observe(where, {
+    childList: true,
+    subtree: true,
+  });
+}
 
 export {
   createDivWithText,
