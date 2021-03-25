@@ -185,7 +185,7 @@ function collectDOMStat(root) {
   function scan(node) {
     for (const el of node.childNodes) {
       if (el.nodeType === Node.TEXT_NODE) stats.texts++;
-      else if (el.nodeType === 1) {
+      else if (el.nodeType === Node.ELEMENT_NODE) {
         if (el.tagName in stats.tags) stats.tags[el.tagName]++;
         else stats.tags[el.tagName] = 1;
 
