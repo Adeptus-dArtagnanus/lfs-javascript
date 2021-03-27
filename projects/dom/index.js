@@ -184,15 +184,23 @@ function collectDOMStat(root) {
 
   function scan(node) {
     for (const el of node.childNodes) {
-      if (el.nodeType === Node.TEXT_NODE) stats.texts++;
-      else if (el.nodeType === Node.ELEMENT_NODE) {
-        if (el.tagName in stats.tags) stats.tags[el.tagName]++;
-        else stats.tags[el.tagName] = 1;
+      if (el.nodeType === Node.TEXT_NODE) {
+        stats.texts++;
+      } else if (el.nodeType === Node.ELEMENT_NODE) {
+        if (el.tagName in stats.tags) {
+          stats.tags[el.tagName]++;
+        } else {
+          stats.tags[el.tagName] = 1;
+        }
 
         for (const cls of el.classList) {
-          if (cls in stats.classes) stats.classes[cls]++;
-          else stats.classes[cls] = 1;
+          if (stats.classes[cls]) {
+            stats.classes[cls]++;
+          } else {
+            stats.classes[cls] = 1;
+          }
         }
+        scan(el);
       }
     }
   }
