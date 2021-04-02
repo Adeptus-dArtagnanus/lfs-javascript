@@ -17,11 +17,51 @@
  */
 import './dnd.html';
 
+let currDragable = null;
+
 const homeworkContainer = document.querySelector('#app');
 
-document.addEventListener('mousemove', (e) => {});
+const randomInt = (num) => Math.round(Math.random() * num);
 
-export function createDiv() {}
+document.addEventListener('mousemove', (e) => {
+  if (currDragable) {
+    currDragable.target.style.left = `${e.clientX - currDragable.offsetX}px`;
+    currDragable.target.style.top = `${e.clientY - currDragable.offsetY}px`;
+  }
+});
+
+document.addEventListener('mousedown', (e) => {
+  if (e.target.tagName === 'DIV') {
+    currDragable = {
+      target: e.target,
+      offsetX: e.offsetX,
+      offsetY: e.offsetY,
+    };
+  }
+});
+
+document.addEventListener('mouseup', (e) => {
+  if (currDragable) {
+    currDragable = null;
+  }
+});
+
+export function createDiv() {
+  const element = document.createElement('div');
+  element.classList.add('draggable-div');
+
+  const color = `rgb(${randomInt(255)}, ${randomInt(255)}, ${randomInt(255)})`;
+  console.log(color);
+
+  element.style.height = `${randomInt(300)}px`;
+  element.style.width = `${randomInt(300)}px`;
+  element.style.left = `${randomInt(window.innerWidth)}px`;
+  element.style.top = `${randomInt(window.innerHeight)}px`;
+  element.style.backgroundColor = color;
+
+  console.log(element.style.backgroundColor);
+  return element;
+}
 
 const addDivButton = homeworkContainer.querySelector('#addDiv');
 
