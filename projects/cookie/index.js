@@ -45,58 +45,69 @@ const addButton = homeworkContainer.querySelector('#add-button');
 // таблица со списком cookie
 const listTable = homeworkContainer.querySelector('#list-table tbody');
 
+const getFilterVal = () => filterNameInput.value.trim().toLowerCase();
+
+//======================================================================================
+// Обработка ивентов куков
+
 filterNameInput.addEventListener('input', function () {
   drowCookies();
 });
-
 addButton.addEventListener('click', () => {
-  document.cookie = `${addNameInput.value}=${addValueInput.value}`;
+  const title = addNameInput.value;
+  const val = addValueInput.value;
+  document.cookie = `${title}=${val}`;
   drowCookies();
 });
-
 listTable.addEventListener('click', (e) => {
-  if(e.target.classList.contains('delete-btn')){
-    let row = e.target.parentNode.parentNode;
-    let cookieStr = `${row.firstElementChild.innerText}=;expires=${new Date().toUTCString()}`;
-
-    document.cookie = cookieStr;
-    drowCookies();
+  const btn = e.target;
+  if (btn.classList.contains('delete-btn')) {
+    deleteCookie(btn.dataset.deleteId);
+    removeRow(btn.dataset.deleteId);
   }
 });
+document.addEventListener('DOMContentLoaded', (e) => drowCookies());
 
+//======================================================================================
+// Рендеринг элементов
 
-function drowCookies(){
-  let filter = filterNameInput.value.trim().toLowerCase()
-  let rows = getCookiesArr() && getCookiesArr().filter( el => el[0].toLowerCase().includes(filter) || el[1].toLowerCase().includes(filter) )
+function drowCookies() {
+  if (document.cookie === '') return;
+
+  const filterVal = getFilterVal();
+  const filter = (el) =>
+    el[0].toLowerCase().includes(filterVal) || el[1].toLowerCase().includes(filterVal);
+
+  const rows = getCookiesArr().filter(filter);
 
   listTable.innerHTML = '';
-  if(rows){
-    drowRows(rows);
-  }
+  listTable.appendChild(createRows(rows));
 }
-
-function drowRows(data){
-  for(let el of data){
-    listTable.appendChild( createRow(el[0],el[1]) )
+//--------------------------------------------------------------------------------------
+function createRows(data) {
+  const fragment = document.createDocumentFragment();
+  for (const el of data) {
+    fragment.appendChild(createRow(el[0], el[1]));
   }
+  return fragment;
 }
+//--------------------------------------------------------------------------------------
+function createRow(title, value) {
+  const row = document.createElement('tr');
+  row.dataset.cookieId = title;
+  row.setAttribute('id', `js-cookie-${title}`);
 
-document.addEventListener('DOMContentLoaded', e=>drowCookies());
-
-
-function createRow(title, value){
-  let row = document.createElement('tr');
-  
-  let titleCell = document.createElement('th');
+  const titleCell = document.createElement('th');
   titleCell.innerText = title;
 
-  let valueCell = document.createElement('th');
+  const valueCell = document.createElement('th');
   valueCell.innerText = value;
 
-  let deleteCell = document.createElement('th');
-  let deleteBtn = document.createElement('button');
+  const deleteCell = document.createElement('th');
+  const deleteBtn = document.createElement('button');
   deleteBtn.classList.add('delete-btn');
   deleteBtn.innerText = 'Удалить';
+  deleteBtn.dataset.deleteId = title;
 
   deleteCell.appendChild(deleteBtn);
 
@@ -107,29 +118,33 @@ function createRow(title, value){
   return row;
 }
 
+//======================================================================================
+// Удаление элементов
 
-function getCookiesObj(){
-  let cookie = document.cookie;
-
-  if(cookie !== ''){
-    return cookie.split('; ').reduce((prev, curr)=>{
-      let [title, value] = curr.split('=')
-      prev[title] = value;
-      return prev;
-    }, {})
-  }
-
-  return null  
+function removeRow(title) {
+  document.querySelector(`#js-cookie-${title}`).remove();
 }
-function getCookiesArr(){
-  let cookie = document.cookie;
 
-  if(cookie !== ''){
-    return cookie.split('; ').reduce((prev, curr)=>{
-      prev.push(curr.split('='))
+//======================================================================================
+// Удаление куков
+
+function deleteCookie(title) {
+  const cookieStr = `${title}=;expires=${new Date().toUTCString()}`;
+  document.cookie = cookieStr;
+}
+
+//======================================================================================
+// Выборка и парсинг куков
+
+function getCookiesArr() {
+  const cookie = document.cookie;
+
+  if (cookie !== '') {
+    return cookie.split('; ').reduce((prev, curr) => {
+      prev.push(curr.split('='));
       return prev;
-    }, [])
+    }, []);
   }
 
-  return null  
+  return null;
 }
